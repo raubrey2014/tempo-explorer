@@ -101,17 +101,29 @@ export default function TransactionPage() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     From
                   </label>
-                  <div className="font-mono text-sm bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 break-all">
+                  <Link
+                    href={`/address/${transaction.from}`}
+                    className="font-mono text-sm bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 break-all block hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
                     {transaction.from}
-                  </div>
+                  </Link>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     To
                   </label>
-                  <div className="font-mono text-sm bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 break-all">
-                    {transaction.to || receipt?.contractAddress || 'Contract Creation'}
-                  </div>
+                  {transaction.to || receipt?.contractAddress ? (
+                    <Link
+                      href={`/address/${transaction.to || receipt?.contractAddress}`}
+                      className="font-mono text-sm bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 break-all block hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      {transaction.to || receipt?.contractAddress}
+                    </Link>
+                  ) : (
+                    <div className="font-mono text-sm bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 break-all">
+                      Contract Creation
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -2,6 +2,7 @@
 
 import { useForm } from '@tanstack/react-form'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function Home() {
   const router = useRouter()
@@ -79,6 +80,15 @@ export default function Home() {
               )}
             </form.Field>
           </form>
+          
+          <div className="mt-4 text-center">
+            <Link
+              href="/tx/0xd9a25364caeabbff78d76375940ea744b6472967ace30036cb0f3f9d5fce953e"
+              className="text-sm text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+            >
+              Or just see an example
+            </Link>
+          </div>
         </div>
       </main>
     </div>
