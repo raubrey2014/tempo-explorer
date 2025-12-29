@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Transaction {
+  // Primary key
+  id              String   @id @default(cuid())
+  
+  // Transaction identification
+  hash            String   @unique // Transaction hash (Keccak-256)
+  
+  // Block information
+  blockNumber     BigInt   @map("block_number")
+  blockHash       String?  @map("block_hash")
+  transactionIndex Int?    @map("transaction_index")
+  
+  // Transaction participants
+  from           String   // Sender address
+  to             String?  // Recipient address (null for contract creation)
+  contractAddress String? @map("contract_address") // For contract creation transactions
+  
+  // Transaction data
+  value          String   // Amount in Wei (stored as string to handle BigInt)
+  input          String   @default("0x") // Transaction input data (hex encoded)
+  nonce          BigInt   // Transaction nonce
+  
+  // Gas information
+  gas            BigInt   // Gas limit
+  gasPrice       String   @map("gas_price") // Gas price in Wei (stored as string)
+  gasUsed        BigInt?  @map("gas_used") // Actual gas used (from receipt)
+  
+  // Transaction status
+  status         String?  // 'success' | 'failed' (from receipt)
+  
+  // Timestamps
+  timestamp      BigInt?  // Block timestamp
+  
+  // Indexing
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  
+  @@index([hash])
+  @@index([blockNumber])
+  @@index([from])
+  @@index([to])
+  @@index([blockHash])
+  @@map("transactions")
+}
