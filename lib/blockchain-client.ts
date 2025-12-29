@@ -10,7 +10,11 @@ export function createBlockchainClient() {
   
   return createPublicClient({
     chain: tempoTestnet,
-    transport: http(rpcUrl),
+    transport: http(rpcUrl, {
+      batch: {
+        wait: 10, // Batch requests within 10ms window into a single JSON-RPC batch call
+      },
+    }),
   })
 }
 
