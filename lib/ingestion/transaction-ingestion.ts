@@ -2,6 +2,20 @@ import { prisma } from '@/lib/prisma'
 import type { Transaction, TransactionReceipt } from 'viem'
 
 /**
+ * Serializes an object for JSON storage, converting BigInt values to strings
+ */
+function serializeForJson(obj: any): any {
+  return JSON.parse(
+    JSON.stringify(obj, (key, value) => {
+      if (typeof value === 'bigint') {
+        return value.toString()
+      }
+      return value
+    })
+  )
+}
+
+/**
  * Transaction data structure for ingestion
  */
 export interface TransactionIngestionData {
@@ -20,6 +34,8 @@ export interface TransactionIngestionData {
   status?: 'success' | 'failed'
   contractAddress?: string | null
   timestamp?: bigint
+  rawTransaction?: Transaction | null // Raw transaction object from viem
+  rawReceipt?: TransactionReceipt | null // Raw receipt object from viem
 }
 
 /**
@@ -46,6 +62,8 @@ export async function ingestTransaction(
         status: tx.status || null,
         contractAddress: tx.contractAddress || null,
         timestamp: tx.timestamp || null,
+        rawTransaction: tx.rawTransaction ? serializeForJson(tx.rawTransaction) : null,
+        rawReceipt: tx.rawReceipt ? serializeForJson(tx.rawReceipt) : null,
       },
       create: {
         hash: tx.hash,
@@ -63,6 +81,8 @@ export async function ingestTransaction(
         status: tx.status || null,
         contractAddress: tx.contractAddress || null,
         timestamp: tx.timestamp || null,
+        rawTransaction: tx.rawTransaction ? serializeForJson(tx.rawTransaction) : null,
+        rawReceipt: tx.rawReceipt ? serializeForJson(tx.rawReceipt) : null,
       },
     })
   } catch (error) {
@@ -97,6 +117,8 @@ export async function ingestTransactions(
           status: tx.status || null,
           contractAddress: tx.contractAddress || null,
           timestamp: tx.timestamp || null,
+          rawTransaction: tx.rawTransaction ? serializeForJson(tx.rawTransaction) : null,
+          rawReceipt: tx.rawReceipt ? serializeForJson(tx.rawReceipt) : null,
         },
         create: {
           hash: tx.hash,
@@ -114,6 +136,8 @@ export async function ingestTransactions(
           status: tx.status || null,
           contractAddress: tx.contractAddress || null,
           timestamp: tx.timestamp || null,
+          rawTransaction: tx.rawTransaction ? serializeForJson(tx.rawTransaction) : null,
+          rawReceipt: tx.rawReceipt ? serializeForJson(tx.rawReceipt) : null,
         },
       })
     )
@@ -151,6 +175,8 @@ export function transformViemTransaction(
     status: receipt?.status === 'success' ? 'success' : receipt?.status === 'reverted' ? 'failed' : undefined,
     contractAddress: receipt?.contractAddress || null,
     timestamp: blockTimestamp,
+    rawTransaction: tx || null,
+    rawReceipt: receipt || null,
   }
 }
 

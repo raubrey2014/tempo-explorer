@@ -809,6 +809,170 @@ function ContractInfo({ address }: { address: `0x${string}` }) {
   )
 }
 
+// RecentTransactions component - displays transactions from the database
+function RecentTransactions({ address }: { address: string }) {
+  const [transactions, setTransactions] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const response = await fetch(`/api/address/${address}/transactions`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch transactions')
+        }
+        const data = await response.json()
+        setTransactions(data.transactions || [])
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch transactions')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchTransactions()
+  }, [address])
+
+  const formatAddress = (addr: string | null | undefined) => {
+    if (!addr) return 'Contract Creation'
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`
+  }
+
+  const formatValue = (value: string) => {
+    try {
+      // Display the raw value with comma separators
+      const bigIntValue = BigInt(value)
+      return bigIntValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    } catch {
+      console.error('Error formatting value', value)
+      return value
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="bg-white dark:bg-gray-800 p-4 rounded border border-gray-200 dark:border-gray-700">
+        <p className="text-sm text-gray-500 dark:text-gray-400">Loading recent transactions...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white dark:bg-gray-800 p-4 rounded border border-red-200 dark:border-red-800">
+        <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
+      </div>
+    )
+  }
+
+  if (transactions.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-800 p-4 rounded border border-gray-200 dark:border-gray-700">
+        <p className="text-sm text-gray-500 dark:text-gray-400">No transactions found for this address</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50 dark:bg-gray-900">
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Hash
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                From
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                To
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Value
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Block
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            {transactions.map((tx) => (
+              <tr key={tx.hash} className="hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <Link
+                    href={`/tx/${tx.hash}`}
+                    className="font-mono text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    {formatAddress(tx.hash)}
+                  </Link>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <Link
+                    href={`/address/${tx.from}`}
+                    className="font-mono text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    {formatAddress(tx.from)}
+                  </Link>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  {tx.to ? (
+                    <Link
+                      href={`/address/${tx.to}`}
+                      className="font-mono text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      {formatAddress(tx.to)}
+                    </Link>
+                  ) : (
+                    <span className="font-mono text-xs text-gray-500 dark:text-gray-400 italic">
+                      Contract Creation
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <span className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                    {formatValue(tx.value)}
+                  </span>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <Link
+                    href={`/block/${tx.blockNumber}`}
+                    className="font-mono text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    {tx.blockNumber}
+                  </Link>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  {tx.status ? (
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        tx.status === 'success'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                      }`}
+                    >
+                      {tx.status === 'success' ? 'Success' : 'Failed'}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Pending</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 export default function AddressPage() {
   const params = useParams()
   const address = params.address as string
@@ -875,6 +1039,14 @@ export default function AddressPage() {
                   userAddress={address as `0x${string}`}
                 />
               </div>
+            </div>
+
+            {/* Recent Transactions */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                Recent Transactions
+              </label>
+              <RecentTransactions address={address} />
             </div>
           </div>
         </div>

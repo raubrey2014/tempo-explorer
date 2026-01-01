@@ -42,6 +42,10 @@ model Transaction {
   // Timestamps
   timestamp      BigInt?  // Block timestamp
   
+  // Raw transaction data (JSON blob)
+  rawTransaction Json?    @map("raw_transaction") // Complete raw transaction object from blockchain
+  rawReceipt     Json?    @map("raw_receipt")     // Complete raw receipt object from blockchain
+  
   // Indexing
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
