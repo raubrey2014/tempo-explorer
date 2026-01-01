@@ -1,6 +1,6 @@
 import { serve } from 'inngest/next'
 import { inngest } from '@/lib/inngest/client'
-import { ingestLatestBlock } from '@/lib/inngest/functions'
+import { ingestLatestBlock, cleanupExpiredTransactions } from '@/lib/inngest/functions'
 
 // Ensure this route uses Node.js runtime (not Edge)
 export const runtime = 'nodejs'
@@ -19,6 +19,7 @@ export const { GET, POST, PUT } = serve({
   client: inngest,
   functions: [
     ingestLatestBlock,
+    cleanupExpiredTransactions,
   ],
 })
 

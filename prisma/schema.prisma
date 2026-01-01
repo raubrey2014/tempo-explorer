@@ -57,3 +57,23 @@ model Transaction {
   @@index([blockHash])
   @@map("transactions")
 }
+
+model Stablecoin {
+  // Primary key
+  id              String   @id @default(cuid())
+  
+  // Contract address (unique)
+  address         String   @unique // Contract address (TIP-20 token)
+  
+  // Block information where first detected
+  firstSeenBlock  BigInt?  @map("first_seen_block") // Block number where first seen
+  firstSeenTimestamp BigInt? @map("first_seen_timestamp") // Block timestamp when first seen
+  
+  // Timestamps
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  
+  @@index([address])
+  @@index([firstSeenBlock])
+  @@map("stablecoins")
+}

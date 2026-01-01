@@ -1,6 +1,7 @@
 import type { PublicClient } from 'viem'
 import { getPublicClient } from '@/lib/blockchain-client'
 import { ingestTransactions, transformViemTransaction } from './transaction-ingestion'
+import { detectAndIngestStablecoins } from './stablecoin-ingestion'
 
 export interface IngestBlockOptions {
   blockId: string // Block number (as string) or block hash (0x...)
@@ -114,6 +115,42 @@ export async function ingestBlock(
 
   // Ingest all transactions in a batch (idempotent via upsert)
   await ingestTransactions(transactionsToIngest)
+
+  // Detect and ingest stablecoins from contract addresses in this block
+  // Collect contract addresses: contractAddress from receipts (contract creations) and to addresses
+  const contractAddresses: string[] = []
+  
+  for (let i = 0; i < transactionsToIngest.length; i++) {
+    const tx = transactionsToIngest[i]
+    
+    // Add contractAddress if present (contract creation)
+    if (tx.contractAddress) {
+      contractAddresses.push(tx.contractAddress)
+    }
+    
+    // Add to address (could be a contract call)
+    if (tx.to) {
+      contractAddresses.push(tx.to)
+    }
+  }
+
+  // Errors are caught and logged but don't fail block ingestion
+  const blockNumberBigInt = block.number || BigInt(0)
+  const blockTimestamp = block.timestamp || undefined
+  
+  if (contractAddresses.length > 0) {
+    try {
+      await detectAndIngestStablecoins(
+        contractAddresses,
+        blockNumberBigInt,
+        blockTimestamp,
+        client
+      )
+    } catch (error) {
+      // Log but don't fail block ingestion if stablecoin detection fails
+      console.error('Error detecting stablecoins:', error)
+    }
+  }
 
   return {
     success: true,
