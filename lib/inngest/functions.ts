@@ -94,8 +94,8 @@ export const cleanupExpiredTransactions = inngest.createFunction(
   },
   async ({ step, logger }) => {
     return await step.run('cleanup-expired-transactions', async () => {
-      // Get TTL duration from environment variable (default: 7 days)
-      const ttlDays = parseInt(process.env.TRANSACTION_TTL_DAYS || '7', 10)
+      // Get TTL duration from environment variable (default: 3 days)
+      const ttlDays = parseInt(process.env.TRANSACTION_TTL_DAYS || '3', 10)
       
       if (ttlDays <= 0) {
         logger.warn('TRANSACTION_TTL_DAYS is set to 0 or negative, skipping cleanup')

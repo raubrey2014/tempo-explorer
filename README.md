@@ -33,7 +33,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 - `DATABASE_URL` - PostgreSQL database connection string (required)
 - `INNGEST_SIGNING_KEY` - Inngest signing key for background jobs (required)
-- `TRANSACTION_TTL_DAYS` - Number of days to keep transactions before automatic cleanup (optional, default: 7)
+- `TRANSACTION_TTL_DAYS` - Number of days to keep transactions before automatic cleanup (optional, default: 3)
 
 ## Deploy on Vercel
 
@@ -43,4 +43,4 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Transaction TTL
 
-Transactions are automatically cleaned up based on their block timestamp. The cleanup job runs hourly and deletes transactions older than the configured TTL duration (default: 7 days). You can configure this by setting the `TRANSACTION_TTL_DAYS` environment variable.
+Transactions are automatically cleaned up based on their block timestamp. The cleanup job runs every 4 hours and deletes transactions older than the configured TTL duration (default: 3 days). You can configure this by setting the `TRANSACTION_TTL_DAYS` environment variable.
