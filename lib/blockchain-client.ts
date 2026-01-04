@@ -1,4 +1,4 @@
-import { createPublicClient, http } from 'viem'
+import { createPublicClient, http, PublicClient } from 'viem'
 import { tempoTestnet } from 'viem/chains'
 
 /**
@@ -26,10 +26,10 @@ let publicClientInstance: ReturnType<typeof createBlockchainClient> | null = nul
 /**
  * Gets or creates the public client instance
  */
-export function getPublicClient() {
+export function getPublicClient(): PublicClient {
   if (!publicClientInstance) {
     publicClientInstance = createBlockchainClient()
   }
-  return publicClientInstance
+  return publicClientInstance as PublicClient
 }
 

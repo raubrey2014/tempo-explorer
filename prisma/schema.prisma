@@ -69,11 +69,19 @@ model Stablecoin {
   firstSeenBlock  BigInt?  @map("first_seen_block") // Block number where first seen
   firstSeenTimestamp BigInt? @map("first_seen_timestamp") // Block timestamp when first seen
   
+  // Statistics
+  transferCount   BigInt   @default(0) @map("transfer_count") // Total number of Transfer events
+  transferVolume String   @default("0") @map("transfer_volume") // Sum of all transfer amounts (in token units)
+  feePaymentCount BigInt  @default(0) @map("fee_payment_count") // Number of transactions that paid fees using this stablecoin
+  feeVolume       String   @default("0") @map("fee_volume") // Sum of all fees paid in this stablecoin (in token units)
+  lastActivityBlock BigInt? @map("last_activity_block") // Most recent block number where activity occurred
+  
   // Timestamps
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
   
   @@index([address])
   @@index([firstSeenBlock])
+  @@index([lastActivityBlock])
   @@map("stablecoins")
 }

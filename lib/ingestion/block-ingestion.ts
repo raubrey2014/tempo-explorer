@@ -2,6 +2,10 @@ import type { PublicClient } from 'viem'
 import { getPublicClient } from '@/lib/blockchain-client'
 import { ingestTransactions, transformViemTransaction } from './transaction-ingestion'
 import { detectAndIngestStablecoins } from './stablecoin-ingestion'
+import {
+  calculateStablecoinStats,
+  updateStablecoinStats,
+} from './stablecoin-stats'
 
 export interface IngestBlockOptions {
   blockId: string // Block number (as string) or block hash (0x...)
@@ -149,6 +153,21 @@ export async function ingestBlock(
     } catch (error) {
       // Log but don't fail block ingestion if stablecoin detection fails
       console.error('Error detecting stablecoins:', error)
+    }
+  }
+
+  // Calculate and update stablecoin statistics from transaction receipts
+  // Only process if we have receipts
+  const validReceipts = receipts.filter((r) => r !== null)
+  if (validReceipts.length > 0) {
+    try {
+      const stats = await calculateStablecoinStats(validReceipts, blockNumberBigInt)
+      if (Object.keys(stats).length > 0) {
+        await updateStablecoinStats(stats, blockNumberBigInt)
+      }
+    } catch (error) {
+      // Log but don't fail block ingestion if stats calculation fails
+      console.error('Error calculating stablecoin stats:', error)
     }
   }
 
