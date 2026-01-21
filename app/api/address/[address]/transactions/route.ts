@@ -15,12 +15,15 @@ export async function GET(
       )
     }
 
-    // Fetch transactions where the address is either the sender (from) or recipient (to)
+    const normalizedAddress = address.toLowerCase()
+
+    // Fetch transactions where the address is sender (from), recipient (to), or was created (contractAddress)
     const transactions = await prisma.transaction.findMany({
       where: {
         OR: [
-          { from: address },
-          { to: address },
+          { from: normalizedAddress },
+          { to: normalizedAddress },
+          { contractAddress: normalizedAddress },
         ],
       },
       orderBy: {
@@ -31,6 +34,7 @@ export async function GET(
         hash: true,
         from: true,
         to: true,
+        contractAddress: true,
         value: true,
         blockNumber: true,
         timestamp: true,

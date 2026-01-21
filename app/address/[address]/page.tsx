@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { useReadContract, useBlockNumber, usePublicClient } from 'wagmi'
+import { useReadContract, usePublicClient } from 'wagmi'
 import { formatUnits, formatEther, hexToBytes, bytesToHex } from 'viem'
 import { useEffect, useState } from 'react'
 
@@ -567,9 +567,9 @@ function AddressOverview({ address }: { address: `0x${string}` }) {
 // ContractInfo component - shows contract-specific details
 function ContractInfo({ address }: { address: `0x${string}` }) {
   const publicClient = usePublicClient()
-  const { data: currentBlock } = useBlockNumber()
   const [bytecode, setBytecode] = useState<string | null>(null)
   const [firstSeenBlock, setFirstSeenBlock] = useState<bigint | null>(null)
+  const [creationHash, setCreationHash] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showBytecode, setShowBytecode] = useState(false)
@@ -578,7 +578,6 @@ function ContractInfo({ address }: { address: `0x${string}` }) {
   const [functionSelectors, setFunctionSelectors] = useState<string[]>([])
   const [functionInfos, setFunctionInfos] = useState<FunctionInfo[]>([])
   const [isEnrichingFunctions, setIsEnrichingFunctions] = useState(false)
-  const [hasSearchedForCreation, setHasSearchedForCreation] = useState(false)
 
   // Fetch bytecode and decode it
   useEffect(() => {
@@ -632,6 +631,33 @@ function ContractInfo({ address }: { address: `0x${string}` }) {
     fetchBytecode()
   }, [publicClient, address])
 
+  // Fetch contract creation info from the database
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchCreation = async () => {
+      try {
+        const response = await fetch(`/api/address/${address}/creation`)
+        if (!response.ok) return
+
+        const data = await response.json()
+        if (cancelled) return
+
+        if (data.creation) {
+          setFirstSeenBlock(BigInt(data.creation.blockNumber))
+          setCreationHash(data.creation.hash)
+        }
+      } catch {
+        // Fail silently - creation info is supplementary
+      }
+    }
+
+    fetchCreation()
+
+    return () => {
+      cancelled = true
+    }
+  }, [address])
 
   if (isLoading) {
     return (
@@ -670,15 +696,27 @@ function ContractInfo({ address }: { address: `0x${string}` }) {
           {firstSeenBlock !== null && (
             <div>
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                First Seen (Deployed)
+                Created
               </label>
-              <div className="font-mono text-sm text-gray-700 dark:text-gray-300">
-                <Link
-                  href={`/block/${firstSeenBlock.toString()}`}
-                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                >
-                  Block {firstSeenBlock.toString()}
-                </Link>
+              <div className="font-mono text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                <div>
+                  <Link
+                    href={`/block/${firstSeenBlock.toString()}`}
+                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    Block {firstSeenBlock.toString()}
+                  </Link>
+                </div>
+                {creationHash && (
+                  <div>
+                    <Link
+                      href={`/tx/${creationHash}`}
+                      className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      {creationHash.slice(0, 10)}...{creationHash.slice(-8)}
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           )}

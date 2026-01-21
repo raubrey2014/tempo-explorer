@@ -54,6 +54,7 @@ model Transaction {
   @@index([blockNumber])
   @@index([from])
   @@index([to])
+  @@index([contractAddress])
   @@index([blockHash])
   @@map("transactions")
 }
