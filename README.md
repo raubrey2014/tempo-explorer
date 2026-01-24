@@ -31,9 +31,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Environment Variables
 
-- `DATABASE_URL` - PostgreSQL database connection string (required)
-- `INNGEST_SIGNING_KEY` - Inngest signing key for background jobs (required)
-- `TRANSACTION_TTL_DAYS` - Number of days to keep transactions before automatic cleanup (optional, default: 3)
+- `TEMPO_RPC_URL` - Optional custom RPC endpoint (defaults to https://rpc.testnet.tempo.xyz)
 
 ## Deploy on Vercel
 
@@ -41,6 +39,3 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-## Transaction TTL
-
-Transactions are automatically cleaned up based on their block timestamp. The cleanup job runs every 4 hours and deletes transactions older than the configured TTL duration (default: 3 days). You can configure this by setting the `TRANSACTION_TTL_DAYS` environment variable.
